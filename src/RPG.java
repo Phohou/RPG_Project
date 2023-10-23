@@ -1,18 +1,34 @@
 import java.util.Random;
 import java.util.Scanner;
 public class RPG {
-public static int Event_Handler(int damage) {
 	
+public static boolean MP_Checker(int PlayerMP, int MPCost) {
+	boolean MPEnough = true;
+	if (PlayerMP - MPCost > 0) {
+		MPEnough = true;
+	}
+	if (PlayerMP - MPCost < 0) {
+		MPEnough = false;
+	}
+	return MPEnough;
 }
-public static int MP_Checker() {
-	
-}
-public static int damageCalc(int lower_bound, int upper_bound) {
-	
+public static int damageCalc(int lower_bound, int upper_bound, int empower) {
+	int total_dmg = 0;
+	Random random = new Random();
+	if (empower == 0) {
+		total_dmg = random.nextInt(upper_bound - lower_bound + 1) + lower_bound;
+		return total_dmg;
+	}
+	else {
+		upper_bound = upper_bound + empower*2;
+		lower_bound = lower_bound + empower;
+		total_dmg = random.nextInt(upper_bound - lower_bound + 1) + lower_bound;
+		return total_dmg;
+	}
 }
 public static int diceRoll(int dice_limit, int dice) {
 	Random random = new Random();
-	dice = random.nextInt(10);
+	dice = random.nextInt(9) + 1;
 	return dice;
 }
 public static void PrintStatus(int PlayerHP, int PlayerMP, int GoblinHP) {
@@ -27,11 +43,14 @@ public static void main(String[] args) {
 int damage = 0;
 int PlayerHP = 100;
 int PlayerMP = 50;
+int MPCost = 0;
 int GoblinHP = 80;
+int GoblinDMG = 0;
 int lower_bound = 0;
 int upper_bound = 0;
 int dice = 0;
 int dice_limit = 0;
+int empower = 0;
 Scanner userInput = new Scanner(System.in);
 boolean gameRun = true;
 System.out.println("Placeholder Text");
@@ -48,7 +67,9 @@ while (gameRun == true) {
 			upper_bound = 10;
 			dice_limit = 10;
 			if (diceRoll(dice_limit, dice) <= 8) {
-				System.out.println("PLACEHOLDER TEXT FOR ATTACK HIT");
+				damage = damageCalc(lower_bound, upper_bound, empower);
+				System.out.println("ATTACK HIT FOR " + damage);
+				GoblinHP = GoblinHP - damage;
 			}
 			else {
 				System.out.println("Your attack missed! 0 damage was done.");
@@ -57,10 +78,30 @@ while (gameRun == true) {
 		if (input == 2) {
 			lower_bound = 10;
 			upper_bound = 25;
-			
+			MPCost = 6;
+			if (MP_Checker(PlayerMP, MPCost) == true) {
+				PlayerMP = PlayerMP - MPCost;
+				damage = damageCalc(lower_bound, upper_bound, empower);
+				System.out.println("ATTACK HIT FOR " + damage);
+				GoblinHP = GoblinHP - damage;
+				}
+			if (MP_Checker(PlayerMP, MPCost) == false) {
+				System.out.println("NOT ENOUGH MP TO CAST FIREBALL");
+			}			
 		}
 		if (input == 3) {
-			System.out.println("TEST3");
+			lower_bound = 20;
+			upper_bound = 30;
+			MPCost = 8;
+			if (MP_Checker(PlayerMP, MPCost) == true) {
+				PlayerMP = PlayerMP - MPCost;
+				damage = damageCalc(lower_bound, upper_bound, empower);
+				System.out.println("HEALED PLAYER FOR " + damage);
+				PlayerHP = PlayerHP + damage;
+				}
+			if (MP_Checker(PlayerMP, MPCost) == false) {
+				System.out.println("NOT ENOUGH MP TO CAST HEAL");
+		}
 		}
 		if (input == 4) {
 			System.out.println("TEST4");
