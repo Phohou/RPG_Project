@@ -1,7 +1,12 @@
 import java.util.Random;
 import java.util.Scanner;
 public class RPG {
-	
+	/*
+	MP_Checker - Checks if the Player has enough MP to cast an MP costing action.
+	@PlayerMP - Player's current MP.
+	@MPCost - MP needed to cast.
+	@return - returns true if the player has enough MP, and false if the player does not.
+	 */
 public static boolean MP_Checker(int PlayerMP, int MPCost) {
 	boolean MPEnough = true;
 	if (PlayerMP - MPCost > 0) {
@@ -12,6 +17,13 @@ public static boolean MP_Checker(int PlayerMP, int MPCost) {
 	}
 	return MPEnough;
 }
+/*
+ damageCalc - Calculates the damage done.
+ @lower_bound - lower bound of the damage that can be done.
+ @upper_bound - upper bound of the damage that can be done.
+ @empower - amount of times that empower has been casted, increasing the damage.
+ @return - total damage done.
+ */
 public static int damageCalc(int lower_bound, int upper_bound, int empower) {
 	int total_dmg = 0;
 	Random random = new Random();
@@ -26,11 +38,23 @@ public static int damageCalc(int lower_bound, int upper_bound, int empower) {
 		return total_dmg;
 	}
 }
-public static int diceRoll(int dice_limit, int dice) {
+/*
+ diceRoll - rolls a dice by generating a number between 1-10.
+ @dice - number generated between 1-10.
+ @return - number generated between 1-10.
+ */
+public static int diceRoll(int dice) {
 	Random random = new Random();
-	dice = random.nextInt(9) + 1;
+	dice = random.nextInt(10) + 1;
 	return dice;
 }
+/*
+ PrintStatus - Prints current PlayerHP, MP, GoblinHP, and lists the actions that can be performed.
+ @PlayerHP - Current Player HP.
+ @PlayerMP - Current Player MP.
+ @GoblinHP - Current GoblinHP.
+ @return - void.
+ */
 public static void PrintStatus(int PlayerHP, int PlayerMP, int GoblinHP) {
 	System.out.println("PLAYER HP: " + PlayerHP + "/100");
 	System.out.println("PLAYER MP: " + PlayerMP + "/50");
@@ -49,11 +73,11 @@ int GoblinDMG = 0;
 int lower_bound = 0;
 int upper_bound = 0;
 int dice = 0;
-int dice_limit = 0;
 int empower = 0;
+int Goblinturn = 0;
 Scanner userInput = new Scanner(System.in);
 boolean gameRun = true;
-System.out.println("Placeholder Text");
+boolean validInput = true;
 System.out.println("");
 System.out.println("BATTLE BEGIN");
 while (gameRun == true) {
@@ -65,8 +89,7 @@ while (gameRun == true) {
 		if (input == 1) {
 			lower_bound = 5;
 			upper_bound = 10;
-			dice_limit = 10;
-			if (diceRoll(dice_limit, dice) <= 8) {
+			if (diceRoll(dice) <= 8) {
 				damage = damageCalc(lower_bound, upper_bound, empower);
 				System.out.println("ATTACK HIT FOR " + damage);
 				GoblinHP = GoblinHP - damage;
@@ -104,33 +127,89 @@ while (gameRun == true) {
 		}
 		}
 		if (input == 4) {
-			System.out.println("TEST4");
+			MPCost = 10;
+			if (MP_Checker(PlayerMP, MPCost) == true) {
+				PlayerMP = PlayerMP - MPCost;
+				empower = empower + 1;
+				System.out.println("CASTED EMPOWER CURRENT STACK: " + empower);
+			}
+			if (MP_Checker(PlayerMP, MPCost) == false) {
+				System.out.println("NOT ENOUGH MP TO CAST EMPOWER");
+			}
 		}
 		if (input == 5) {
-			System.out.println("TEST5");
+			if (diceRoll(dice) >= 6) {
+				System.out.println("YOU SUCESSFULLY FLED ENDING ENCOUNTER");
+				System.exit(0);
+			}
+			if (diceRoll(dice) <= 5) {
+				System.out.println("YOUR OPPONENT DID NOT ALLOW YOU TO FLEE");
+			}
 		}
 		if (input == 6) {
 			System.out.print("BASIC ATTACK: 80% chance to deal 5-10 damage to the enemy.");
 			System.out.printf("%nFIREBALL: Deal between 10-25 damage at the cost of 6 MP.%nHEAL: Regain 20-30 HP at the cost of 8 MP.%nEMPOWER: Increases minumum damage done by 1 and maximum by 2. *Permanent effect*%n");
 			System.out.println("FLEE: Chance to flee and escape combat, ending the encounter.");
 			System.out.println(" ");
-		}
-		else {
-			
+			Goblinturn = 2;
 		}
 	}
 	else {
 		System.out.println("Please input an acceptable action.");
+		validInput = false;
+		while (validInput == false) {
+			userInput.next();
+			if (userInput.hasNextInt()) {
+				input = userInput.nextInt();
+				validInput = true;
+				Goblinturn = 2;
+			}
+			else {
+				System.out.println("Please input an acceptable action.");
+			}
+		}
+	}
+	while (Goblinturn < 2) {
+		if (diceRoll(dice) >= 6) {
+			lower_bound = 3;
+			upper_bound = 7;
+			GoblinDMG = damageCalc(lower_bound, upper_bound, 0);
+			PlayerHP = PlayerHP - GoblinDMG;
+			System.out.println("GOBLIN ATTACKED PLAYER FOR " + GoblinDMG);
+			Goblinturn = Goblinturn + 1;
+		}
+		if (diceRoll(dice) <= 5) {
+			System.out.println("GOBLIN'S ATTACK MISSED");
+			Goblinturn = Goblinturn + 1;
+		}
+	}
+	if (PlayerHP < 0) {
+		gameRun = false;
+		System.out.println("PLAYER DIED, YOU'VE LOST");
+		System.exit(0);
+	}
+	if (GoblinHP < 0) {
+		gameRun = false;
+		System.out.println("GOBLIN DIED, YOU'VE WON");
+		System.exit(0);
 	}
 	while (cont == 0) {
 		System.out.println("Please press 1 to continue.");
-		input = userInput.nextInt();
-		if (input == 1) {
-			cont = 1;
+		if (userInput.hasNextInt()) {
+			input = userInput.nextInt();
+			if (input == 1) {
+				cont = 1;
+				Goblinturn = 0;
+			}
+			else {
+				cont = 0;
+		}
 		}
 		else {
-			cont = 0;
+			System.out.println("1 was not entered, ending code.");
+			System.exit(0);
 		}
+		
 	}
 }
 }
